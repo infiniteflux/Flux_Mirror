@@ -1,6 +1,8 @@
 package com.flux_mirror.screen
 
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.flux_mirror.permission.PermissionsHelper
+import com.flux_mirror.service.CameraPreviewService
+import com.flux_mirror.service.DrawingOverlayService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -85,6 +89,7 @@ fun FloatingToolsUI(
         ) { expanded ->
             if (expanded) {
                 ExpandedFloatingTools(
+                    context = LocalContext.current,
                     onCollapse = { isExpanded = false }
                 )
             } else {
@@ -120,7 +125,7 @@ fun CollapsedFloatingButton(onExpand: () -> Unit) {
 }
 
 @Composable
-fun ExpandedFloatingTools(onCollapse: () -> Unit) {
+fun ExpandedFloatingTools(context: Context, onCollapse: () -> Unit) {
     android.util.Log.d("FloatingUI", "Rendering ExpandedFloatingTools")
 
     Column(
@@ -167,7 +172,10 @@ fun ExpandedFloatingTools(onCollapse: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(
-                onClick = { android.util.Log.d("FloatingUI", "🖊️ PEN clicked!") },
+                onClick = {
+                    android.util.Log.d("FloatingUI", "🖊️ PEN clicked! Starting drawing...")
+                    context.startService(Intent(context, DrawingOverlayService::class.java))
+                },
                 modifier = Modifier.size(40.dp)
             ) {
                 ToolIcon(
@@ -177,7 +185,10 @@ fun ExpandedFloatingTools(onCollapse: () -> Unit) {
             }
 
             IconButton(
-                onClick = { android.util.Log.d("FloatingUI", "📹 CAMERA clicked!") },
+                onClick = {
+                    android.util.Log.d("FloatingUI", "📹 CAMERA clicked! Opening camera preview...")
+                    context.startService(Intent(context, CameraPreviewService::class.java))
+                },
                 modifier = Modifier.size(40.dp)
             ) {
                 ToolIcon(
@@ -187,11 +198,14 @@ fun ExpandedFloatingTools(onCollapse: () -> Unit) {
             }
 
             IconButton(
-                onClick = { android.util.Log.d("FloatingUI", "⭐ STAR clicked!") },
+                onClick = {
+                    android.util.Log.d("FloatingUI", "📸 SCREENSHOT clicked!")
+                    // Screenshot functionality would go here
+                },
                 modifier = Modifier.size(40.dp)
             ) {
                 ToolIcon(
-                    icon = Icons.Default.Star,
+                    icon = Icons.Default.PhotoCamera,
                     color = Color(0xFF4A90E2)
                 )
             }
@@ -206,17 +220,36 @@ fun ExpandedFloatingTools(onCollapse: () -> Unit) {
             FloatingActionIcon(
                 icon = Icons.Default.Edit,
                 backgroundColor = Color.Black,
-                onClick = { android.util.Log.d("FloatingUI", "✏️ Edit FAB clicked!") }
+                onClick = {
+                    android.util.Log.d("FloatingUI", "✏️ Edit FAB clicked! Starting drawing service...")
+                    try {
+                        context.startService(Intent(context, DrawingOverlayService::class.java))
+                        android.util.Log.d("FloatingUI", "✅ Drawing service started")
+                    } catch (e: Exception) {
+                        android.util.Log.e("FloatingUI", "❌ Failed to start drawing service", e)
+                    }
+                }
             )
             FloatingActionIcon(
                 icon = Icons.Default.Videocam,
                 backgroundColor = Color.Black,
-                onClick = { android.util.Log.d("FloatingUI", "🎥 Video FAB clicked!") }
+                onClick = {
+                    android.util.Log.d("FloatingUI", "🎥 Video FAB clicked! Starting camera service...")
+                    try {
+                        context.startService(Intent(context, CameraPreviewService::class.java))
+                        android.util.Log.d("FloatingUI", "✅ Camera service started")
+                    } catch (e: Exception) {
+                        android.util.Log.e("FloatingUI", "❌ Failed to start camera service", e)
+                    }
+                }
             )
             FloatingActionIcon(
                 icon = Icons.Default.Home,
                 backgroundColor = Color.Black,
-                onClick = { android.util.Log.d("FloatingUI", "🏠 Home FAB clicked!") }
+                onClick = {
+                    android.util.Log.d("FloatingUI", "🏠 Home FAB clicked!")
+                    // Could open main app or minimize
+                }
             )
 
             // Collapse button
@@ -276,297 +309,275 @@ fun FloatingActionIcon(
     }
 }
 
-@Composable
-fun FloatingActionIcon(
-    icon: ImageVector,
-    backgroundColor: Color
-) {
-    IconButton(
-        onClick = { /* Handle click */ },
-        modifier = Modifier
-            .size(56.dp)
-            .shadow(8.dp, CircleShape)
-            .background(backgroundColor, CircleShape)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(28.dp)
-        )
-    }
-}
 
+//@Composable
+//fun FloatingToolsControlScreen(
+//    onStartFloating: () -> Unit,
+//    onStopFloating: () -> Unit
+//) {
+//    val context = LocalContext.current
+//    var isFloatingActive by remember { mutableStateOf(false) }
+//    val scope = rememberCoroutineScope()
+//
+//    // Check overlay permission status on composition
+//    DisposableEffect(Unit) {
+//        val hasPermission = PermissionsHelper.hasOverlayPermission(context)
+//        isFloatingActive = hasPermission
+//        Log.d("FloatingToolsControl", "Initial check - Permission: $hasPermission, State: $isFloatingActive")
+//        onDispose { }
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(20.dp),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Spacer(modifier = Modifier.height(20.dp))
+//
+//        // Header Card
+//        Card(
+//            modifier = Modifier.fillMaxWidth(),
+//            colors = CardDefaults.cardColors(
+//                containerColor = Color(0xFF1E293B)
+//            ),
+//            shape = RoundedCornerShape(16.dp)
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(24.dp),
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.Cast,
+//                    contentDescription = null,
+//                    modifier = Modifier.size(64.dp),
+//                    tint = Color(0xFF6366F1)
+//                )
+//
+//                Spacer(modifier = Modifier.height(16.dp))
+//
+//                Text(
+//                    text = "Floating Tools",
+//                    fontSize = 24.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.White
+//                )
+//
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Text(
+//                    text = "Control your screen mirroring tools from anywhere",
+//                    fontSize = 14.sp,
+//                    color = Color(0xFF94A3B8),
+//                    textAlign = TextAlign.Center
+//                )
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.height(32.dp))
+//
+//        // Status Card
+//        Card(
+//            modifier = Modifier.fillMaxWidth(),
+//            colors = CardDefaults.cardColors(
+//                containerColor = if (isFloatingActive)
+//                    Color(0xFF10B981).copy(alpha = 0.1f)
+//                else
+//                    Color(0xFFEF4444).copy(alpha = 0.1f)
+//            ),
+//            shape = RoundedCornerShape(16.dp)
+//        ) {
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(20.dp),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Icon(
+//                    imageVector = if (isFloatingActive)
+//                        Icons.Default.CheckCircle
+//                    else
+//                        Icons.Default.Info,
+//                    contentDescription = null,
+//                    tint = if (isFloatingActive)
+//                        Color(0xFF10B981)
+//                    else
+//                        Color(0xFFEF4444),
+//                    modifier = Modifier.size(32.dp)
+//                )
+//
+//                Spacer(modifier = Modifier.width(16.dp))
+//
+//                Column {
+//                    Text(
+//                        text = "Status",
+//                        fontSize = 12.sp,
+//                        color = Color(0xFF94A3B8)
+//                    )
+//                    Text(
+//                        text = if (isFloatingActive) "Active" else "Inactive",
+//                        fontSize = 18.sp,
+//                        fontWeight = FontWeight.SemiBold,
+//                        color = if (isFloatingActive)
+//                            Color(0xFF10B981)
+//                        else
+//                            Color(0xFFEF4444)
+//                    )
+//                }
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.height(32.dp))
+//
+//        // Features List
+//        Card(
+//            modifier = Modifier.fillMaxWidth(),
+//            colors = CardDefaults.cardColors(
+//                containerColor = Color(0xFF1E293B)
+//            ),
+//            shape = RoundedCornerShape(16.dp)
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(20.dp)
+//            ) {
+//                Text(
+//                    text = "Features",
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.White
+//                )
+//
+//                Spacer(modifier = Modifier.height(16.dp))
+//
+//                FeatureItem(
+//                    icon = Icons.Default.OpenInFull,
+//                    title = "Draggable",
+//                    description = "Move tools anywhere on screen"
+//                )
+//
+//                FeatureItem(
+//                    icon = Icons.Default.Visibility,
+//                    title = "Always Visible",
+//                    description = "Works during screen casting"
+//                )
+//
+//                FeatureItem(
+//                    icon = Icons.Default.TouchApp,
+//                    title = "Quick Access",
+//                    description = "Access tools with one tap"
+//                )
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.weight(1f))
+//
+//        // Control Buttons
+//        Button(
+//            onClick = {
+//                Log.d("FloatingToolsControl", "========================================")
+//                Log.d("FloatingToolsControl", "🔥 BUTTON CLICKED!")
+//                Log.d("FloatingToolsControl", "Current state: isFloatingActive=$isFloatingActive")
+//                Log.d("FloatingToolsControl", "Has permission: ${PermissionsHelper.hasOverlayPermission(context)}")
+//
+//                if (isFloatingActive) {
+//                    Log.d("FloatingToolsControl", "Action: STOPPING service")
+//                    onStopFloating()
+//                    isFloatingActive = false
+//                } else {
+//                    Log.d("FloatingToolsControl", "Action: STARTING service")
+//                    onStartFloating()
+//
+//                    // Update state after permission check
+//                    scope.launch {
+//                        delay(1500)
+//                        val newState = PermissionsHelper.hasOverlayPermission(context)
+//                        isFloatingActive = newState
+//                        Log.d("FloatingToolsControl", "State updated after delay: $newState")
+//                    }
+//                }
+//                Log.d("FloatingToolsControl", "========================================")
+//            },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp),
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = if (isFloatingActive)
+//                    Color(0xFFEF4444)
+//                else
+//                    Color(0xFF6366F1)
+//            ),
+//            shape = RoundedCornerShape(12.dp)
+//        ) {
+//            Icon(
+//                imageVector = if (isFloatingActive)
+//                    Icons.Default.Close
+//                else
+//                    Icons.Default.PlayArrow,
+//                contentDescription = null,
+//                modifier = Modifier.size(24.dp)
+//            )
+//            Spacer(modifier = Modifier.width(8.dp))
+//            Text(
+//                text = if (isFloatingActive)
+//                    "Stop Floating Tools"
+//                else
+//                    "Start Floating Tools",
+//                fontSize = 16.sp,
+//                fontWeight = FontWeight.SemiBold
+//            )
+//        }
+//
+//        Spacer(modifier = Modifier.height(20.dp))
+//    }
+//}
 
-
-@Composable
-fun FloatingToolsControlScreen(
-    onStartFloating: () -> Unit,
-    onStopFloating: () -> Unit
-) {
-    val context = LocalContext.current
-    var isFloatingActive by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    // Check overlay permission status on composition
-    DisposableEffect(Unit) {
-        val hasPermission = PermissionsHelper.hasOverlayPermission(context)
-        isFloatingActive = hasPermission
-        Log.d("FloatingToolsControl", "Initial check - Permission: $hasPermission, State: $isFloatingActive")
-        onDispose { }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Header Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1E293B)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Cast,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = Color(0xFF6366F1)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Floating Tools",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Control your screen mirroring tools from anywhere",
-                    fontSize = 14.sp,
-                    color = Color(0xFF94A3B8),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Status Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isFloatingActive)
-                    Color(0xFF10B981).copy(alpha = 0.1f)
-                else
-                    Color(0xFFEF4444).copy(alpha = 0.1f)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (isFloatingActive)
-                        Icons.Default.CheckCircle
-                    else
-                        Icons.Default.Info,
-                    contentDescription = null,
-                    tint = if (isFloatingActive)
-                        Color(0xFF10B981)
-                    else
-                        Color(0xFFEF4444),
-                    modifier = Modifier.size(32.dp)
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
-                    Text(
-                        text = "Status",
-                        fontSize = 12.sp,
-                        color = Color(0xFF94A3B8)
-                    )
-                    Text(
-                        text = if (isFloatingActive) "Active" else "Inactive",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isFloatingActive)
-                            Color(0xFF10B981)
-                        else
-                            Color(0xFFEF4444)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Features List
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1E293B)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
-                Text(
-                    text = "Features",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                FeatureItem(
-                    icon = Icons.Default.OpenInFull,
-                    title = "Draggable",
-                    description = "Move tools anywhere on screen"
-                )
-
-                FeatureItem(
-                    icon = Icons.Default.Visibility,
-                    title = "Always Visible",
-                    description = "Works during screen casting"
-                )
-
-                FeatureItem(
-                    icon = Icons.Default.TouchApp,
-                    title = "Quick Access",
-                    description = "Access tools with one tap"
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Control Buttons
-        Button(
-            onClick = {
-                Log.d("FloatingToolsControl", "========================================")
-                Log.d("FloatingToolsControl", "🔥 BUTTON CLICKED!")
-                Log.d("FloatingToolsControl", "Current state: isFloatingActive=$isFloatingActive")
-                Log.d("FloatingToolsControl", "Has permission: ${PermissionsHelper.hasOverlayPermission(context)}")
-
-                if (isFloatingActive) {
-                    Log.d("FloatingToolsControl", "Action: STOPPING service")
-                    onStopFloating()
-                    isFloatingActive = false
-                } else {
-                    Log.d("FloatingToolsControl", "Action: STARTING service")
-                    onStartFloating()
-
-                    // Update state after permission check
-                    scope.launch {
-                        delay(1500)
-                        val newState = PermissionsHelper.hasOverlayPermission(context)
-                        isFloatingActive = newState
-                        Log.d("FloatingToolsControl", "State updated after delay: $newState")
-                    }
-                }
-                Log.d("FloatingToolsControl", "========================================")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFloatingActive)
-                    Color(0xFFEF4444)
-                else
-                    Color(0xFF6366F1)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Icon(
-                imageVector = if (isFloatingActive)
-                    Icons.Default.Close
-                else
-                    Icons.Default.PlayArrow,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = if (isFloatingActive)
-                    "Stop Floating Tools"
-                else
-                    "Start Floating Tools",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-    }
-}
-
-@Composable
-fun FeatureItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    description: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(
-                    color = Color(0xFF6366F1).copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(12.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color(0xFF6366F1),
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
-            Text(
-                text = description,
-                fontSize = 13.sp,
-                color = Color(0xFF94A3B8)
-            )
-        }
-    }
-}
+//@Composable
+//fun FeatureItem(
+//    icon: androidx.compose.ui.graphics.vector.ImageVector,
+//    title: String,
+//    description: String
+//) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 12.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .size(48.dp)
+//                .background(
+//                    color = Color(0xFF6366F1).copy(alpha = 0.2f),
+//                    shape = RoundedCornerShape(12.dp)
+//                ),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Icon(
+//                imageVector = icon,
+//                contentDescription = null,
+//                tint = Color(0xFF6366F1),
+//                modifier = Modifier.size(24.dp)
+//            )
+//        }
+//
+//        Spacer(modifier = Modifier.width(16.dp))
+//
+//        Column {
+//            Text(
+//                text = title,
+//                fontSize = 16.sp,
+//                fontWeight = FontWeight.SemiBold,
+//                color = Color.White
+//            )
+//            Text(
+//                text = description,
+//                fontSize = 13.sp,
+//                color = Color(0xFF94A3B8)
+//            )
+//        }
+//    }
+//}

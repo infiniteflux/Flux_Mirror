@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- 📡 Location / Nearby permissions (for Wi-Fi Direct & discovery) -->
     <!-- For Android 13+ -->
@@ -34,6 +35,9 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <uses-feature android:name="android.hardware.wifi.direct" android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -71,10 +75,19 @@
             android:foregroundServiceType="mediaProjection" />
 
         <service
-            android:name=".service.FloatingToolsService"
+            android:name="com.flux_mirror.service.FloatingToolsService"
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name="com.flux_mirror.service.DrawingOverlayService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name="com.flux_mirror.service.CameraPreviewService"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 </manifest>
