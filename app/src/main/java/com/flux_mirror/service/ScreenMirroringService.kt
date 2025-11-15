@@ -117,6 +117,7 @@ class ScreenMirroringService : Service() {
                     }
                 }
             }
+
             ACTION_START_LOCAL -> {
                 val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
                 val resultData = getResultData(intent)
@@ -125,7 +126,10 @@ class ScreenMirroringService : Service() {
                 if (resultCode == Activity.RESULT_OK && resultData != null && deviceIp != null) {
                     serviceScope.launch {
                         try {
-                            startForeground(NOTIFICATION_ID, createNotification("Casting to Device"))
+                            startForeground(
+                                NOTIFICATION_ID,
+                                createNotification("Casting to Device")
+                            )
                             delay(500)
                             startLocalCasting(resultCode, resultData, deviceIp)
                         } catch (e: Exception) {
@@ -135,6 +139,7 @@ class ScreenMirroringService : Service() {
                     }
                 }
             }
+
             ACTION_STOP -> {
                 stopAllCasting()
             }
@@ -149,7 +154,7 @@ class ScreenMirroringService : Service() {
             intent.getParcelableExtra(EXTRA_RESULT_DATA, Intent::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra<Intent>(EXTRA_RESULT_DATA)
+            intent.getParcelableExtra(EXTRA_RESULT_DATA)
         }
     }
 
@@ -260,7 +265,8 @@ class ScreenMirroringService : Service() {
                             webClients.add(this)
                             Log.d(TAG, "Client connected. Total clients: ${webClients.size}")
                             try {
-                                for (frame in incoming) { /* Keep alive */ }
+                                for (frame in incoming) { /* Keep alive */
+                                }
                             } catch (e: Exception) {
                                 // Log.e(TAG, "WebSocket error", e)
                             } finally {
@@ -299,7 +305,6 @@ class ScreenMirroringService : Service() {
     }
 
     private fun getWebViewerHtml(): String {
-        // Your exact HTML
         return """
 <!DOCTYPE html>
 <html>
@@ -613,8 +618,6 @@ class ScreenMirroringService : Service() {
     private fun stopAllCasting() {
         try {
             isCapturing = false
-
-            // Stop the Ktor server gracefully
             webServer?.stop(1000, 2000)
             webServer = null
 

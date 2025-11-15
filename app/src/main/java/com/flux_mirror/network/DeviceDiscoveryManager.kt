@@ -38,9 +38,7 @@ class DeviceDiscoveryManager(private val context: Context) {
     }
 
     private val displayManager: DisplayManager? by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        } else null
+        context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     }
 
     private var systemMediaRouterCallback: SystemMediaRouter.SimpleCallback? = null
