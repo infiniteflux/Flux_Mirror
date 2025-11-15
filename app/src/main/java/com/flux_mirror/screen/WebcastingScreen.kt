@@ -62,12 +62,18 @@ fun WebCastScreen() {
     var port by remember { mutableStateOf("8080") }
     var hasPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
+            listOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.ACCESS_WIFI_STATE
+            ).all { permission ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    permission
+                ) == PackageManager.PERMISSION_GRANTED
+            }
         )
     }
+
 
     LaunchedEffect(Unit) {
         ipAddress = getLocalIpAddress(context)

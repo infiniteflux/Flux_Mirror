@@ -13,7 +13,7 @@ object PermissionsHelper {
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun getRequiredPermissions(): Array<String> {
-        val permissions = mutableListOf<String>(
+        val permissions = mutableListOf(
             Manifest.permission.INTERNET,
             Manifest.permission.ACCESS_WIFI_STATE,
             Manifest.permission.CHANGE_WIFI_STATE,
@@ -24,10 +24,8 @@ object PermissionsHelper {
             Manifest.permission.CAMERA
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
-            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
+        permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         return permissions.toTypedArray()
     }
 
@@ -79,12 +77,8 @@ object PermissionsHelper {
      * Required for floating windows that appear over other apps
      */
     fun hasOverlayPermission(context: Context): Boolean {
-        val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val hasPermission =
             Settings.canDrawOverlays(context)
-        } else {
-            // Permission automatically granted on pre-Marshmallow
-            true
-        }
 
         Log.d("PermissionsHelper", "Overlay permission granted: $hasPermission")
         return hasPermission
@@ -109,9 +103,6 @@ object PermissionsHelper {
      */
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun performPermissionAudit(context: Context) {
-        Log.d("PermissionsHelper", "========================================")
-        Log.d("PermissionsHelper", "       PERMISSION AUDIT REPORT")
-        Log.d("PermissionsHelper", "========================================")
 
         // Runtime permissions
         Log.d("PermissionsHelper", "\n--- RUNTIME PERMISSIONS ---")

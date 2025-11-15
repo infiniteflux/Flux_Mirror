@@ -41,12 +41,13 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.Collections
+import androidx.core.graphics.createBitmap
 
 class ScreenMirroringService : Service() {
 
     companion object {
         private const val TAG = "ScreenMirrorService"
-        private const val NOTIFICATION_ID = 1001 // Original ID
+        private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "screen_mirroring_channel"
         private const val WEB_PORT = 8080
 
@@ -235,11 +236,7 @@ class ScreenMirroringService : Service() {
         val rowStride = planes[0].rowStride
         val rowPadding = rowStride - pixelStride * image.width
 
-        val bitmap = Bitmap.createBitmap(
-            image.width + rowPadding / pixelStride,
-            image.height,
-            Bitmap.Config.ARGB_8888
-        )
+        val bitmap = createBitmap(image.width + rowPadding / pixelStride, image.height)
         bitmap.copyPixelsFromBuffer(buffer)
         return Bitmap.createBitmap(bitmap, 0, 0, image.width, image.height)
     }
@@ -613,7 +610,6 @@ class ScreenMirroringService : Service() {
         """.trimIndent()
     }
 
-    // ⬇️ --- THIS IS THE CRASH FIX --- ⬇️
     private fun stopAllCasting() {
         try {
             isCapturing = false
@@ -627,9 +623,6 @@ class ScreenMirroringService : Service() {
             mediaProjection?.stop()
 
             webClients.clear()
-
-            // DO NOT CANCEL THE SCOPE HERE
-            // serviceScope.cancel() // ⬅️ THIS WAS THE BUG
 
             virtualDisplay = null
             imageReader = null
@@ -657,8 +650,6 @@ class ScreenMirroringService : Service() {
             stopIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-
-        // Use a built-in Android icon to be safe
         val smallIcon = android.R.drawable.ic_media_play
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -694,8 +685,6 @@ class ScreenMirroringService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         stopAllCasting()
-
-        // Cancel the scope safely in onDestroy
         serviceScope.cancel()
     }
 }
