@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="SelectedPhotoAccess">
 
-    <!-- 🌐 Network + Multicast (for NSD & Miracast) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -12,33 +11,24 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- 📡 Location / Nearby permissions (for Wi-Fi Direct & discovery) -->
-    <!-- For Android 13+ -->
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="31" />
-    <!-- For Android 12 and below -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- 🎙 Audio capture -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- 🪟 MediaProjection & overlay -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
         tools:ignore="ForegroundServicesPolicy" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
-    <!-- 🔔 Notifications (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!-- 🖼 Optional media read (if you stream or capture media files) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
         tools:ignore="PhotoAndVideoPolicy" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"
         tools:ignore="PhotoAndVideoPolicy,SelectedPhotoAccess" />
-
     <uses-feature android:name="android.hardware.wifi.direct" android:required="true" />
     <uses-feature
         android:name="android.hardware.camera"
@@ -65,15 +55,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- 🌍 Web / RTSP Screen Mirroring -->
+        
         <service
             android:name=".service.ScreenMirroringService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
 
-        <!-- 📺 Miracast (Wi-Fi Direct) Projection -->
         <service
             android:name=".service.MiracastService"
             android:exported="false"
