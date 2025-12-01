@@ -156,7 +156,7 @@ Flux_Mirror/
 
 1. **Clone Repository**
    ```bash
-   git clone <https://github.com/infiniteflux/Flux_Mirror>
+   git clone https://github.com/infiniteflux/Flux_Mirror
    cd Flux_Mirror
    ```
 
@@ -276,25 +276,25 @@ Located in: `app/src/androidTest/java/com/flux_mirror/`
 ### **Manual Testing Checklist**
 
 #### **Local Cast**
-- [ ] Miracast device appears in list
-- [ ] Cast Screen opens on device selection
-- [ ] Connection status updates correctly
-- [ ] Stop button terminates casting
-- [ ] Notification appears and works
+- [✓] Miracast device appears in list
+- [✓] Cast Screen opens on device selection
+- [✓] Connection status updates correctly
+- [✓] Stop button terminates casting
+- [✓] Notification appears and works
 
 #### **Web Cast**
-- [ ] IP address displays correctly
-- [ ] Browser loads web viewer
-- [ ] Screen updates in real-time
-- [ ] Fullscreen mode works
-- [ ] Screenshot downloads correctly
+- [✓] IP address displays correctly
+- [✓] Browser loads web viewer
+- [✓] Screen updates in real-time
+- [✓] Fullscreen mode works
+- [✓] Screenshot downloads correctly
 
 #### **Floating Tools**
-- [ ] Overlay permission request appears
-- [ ] Floating window displays
-- [ ] Window is draggable
-- [ ] Window persists over other apps
-- [ ] Stop removes floating window
+- [✓] Overlay permission request appears
+- [✓] Floating window displays
+- [✓] Window is draggable
+- [✓] Window persists over other apps
+- [✓] Stop removes floating window
 
 ---
 
@@ -406,12 +406,6 @@ embeddedServer(Netty, port = 8080) {
 
 ---
 
-## 📄 License
-
-[Add your license information here]
-
----
-
 ## 👨‍💻 Developer
 
 **Project**: Flux_Mirror  
@@ -426,12 +420,6 @@ embeddedServer(Netty, port = 8080) {
 - **Ktor**: For lightweight HTTP server framework
 - **Kotlin Coroutines**: For elegant asynchronous programming
 - **Material Design 3**: For beautiful UI components
-
----
-
-## 📞 Support
-
-For issues, questions, or contributions, please refer to the project's issue tracker.
 
 ---
 
